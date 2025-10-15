@@ -2,10 +2,10 @@ module Main (main) where
 
 import Criterion.Main
 import Data.Serialize qualified as Cereal
-import GHC.Stack (HasCallStack)
 import Data.Store qualified as Store
 import Data.Vector qualified as V
 import Data.Vector.Unboxed qualified as Vu
+import GHC.Stack (HasCallStack)
 import PtrPeeker qualified as PtrPeeker
 import Test.Tasty.HUnit qualified as Tasty
 import Prelude
@@ -97,7 +97,7 @@ main = do
   defaultMain groups
 
 -- | Test functions and create a benchmark group out of them.
-initGroup :: HasCallStack => (Eq a, Show a, NFData a) => String -> ByteString -> a -> [(String, ByteString -> Maybe a)] -> IO Benchmark
+initGroup :: (HasCallStack) => (Eq a, Show a, NFData a) => String -> ByteString -> a -> [(String, ByteString -> Maybe a)] -> IO Benchmark
 initGroup name input correctDecoding subjects = do
   fmap (bgroup name) . forM subjects $ \(name, f) -> do
     Tasty.assertEqual name (Just correctDecoding) (f input)
