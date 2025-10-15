@@ -37,73 +37,78 @@ decodePoint = runVariableOnByteString points
 ## Benchmarks
 
 ```
-benchmarking int32-le-triplet/ptr-peeker/fixed
-time                 14.89 ns   (14.71 ns .. 15.10 ns)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 14.77 ns   (14.71 ns .. 14.94 ns)
-std dev              294.0 ps   (210.5 ps .. 498.3 ps)
-variance introduced by outliers: 30% (moderately inflated)
+benchmarking word32-be-triplet/ptr-peeker/fixed
+time                 15.09 ns   (14.84 ns .. 15.41 ns)
+                     0.998 R²   (0.996 R² .. 1.000 R²)
+mean                 14.93 ns   (14.85 ns .. 15.13 ns)
+std dev              437.9 ps   (118.6 ps .. 739.7 ps)
+variance introduced by outliers: 48% (moderately inflated)
 
-benchmarking int32-le-triplet/ptr-peeker/variable
-time                 16.80 ns   (16.74 ns .. 16.90 ns)
-                     1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 16.84 ns   (16.74 ns .. 17.02 ns)
-std dev              429.2 ps   (264.3 ps .. 688.6 ps)
-variance introduced by outliers: 41% (moderately inflated)
+benchmarking word32-be-triplet/ptr-peeker/variable
+time                 16.19 ns   (16.12 ns .. 16.28 ns)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 16.31 ns   (16.15 ns .. 16.81 ns)
+std dev              914.2 ps   (279.7 ps .. 1.695 ns)
+variance introduced by outliers: 78% (severely inflated)
 
-benchmarking int32-le-triplet/store
-time                 122.3 ns   (121.7 ns .. 122.8 ns)
+benchmarking word32-be-triplet/store
+time                 122.3 ns   (121.7 ns .. 122.9 ns)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 122.7 ns   (122.1 ns .. 123.3 ns)
-std dev              1.792 ns   (1.347 ns .. 2.330 ns)
+mean                 121.9 ns   (121.2 ns .. 122.4 ns)
+std dev              1.798 ns   (1.486 ns .. 2.254 ns)
+variance introduced by outliers: 17% (moderately inflated)
+
+benchmarking word32-be-triplet/cereal
+time                 19.40 ns   (19.33 ns .. 19.48 ns)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 19.41 ns   (19.35 ns .. 19.48 ns)
+std dev              259.2 ps   (187.3 ps .. 386.4 ps)
 variance introduced by outliers: 16% (moderately inflated)
 
-benchmarking int32-le-triplet/cereal
-time                 21.50 ns   (21.39 ns .. 21.63 ns)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 21.68 ns   (21.56 ns .. 22.07 ns)
-std dev              628.8 ps   (301.6 ps .. 1.124 ns)
-variance introduced by outliers: 47% (moderately inflated)
+benchmarking word32-be-triplet/flat
+time                 113.1 ns   (112.7 ns .. 113.5 ns)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 113.0 ns   (112.5 ns .. 113.4 ns)
+std dev              1.587 ns   (1.218 ns .. 2.252 ns)
+variance introduced by outliers: 16% (moderately inflated)
 
 benchmarking array-of-int4/ptr-peeker
-time                 107.3 ns   (106.9 ns .. 107.7 ns)
+time                 105.2 ns   (105.0 ns .. 105.3 ns)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 107.3 ns   (107.0 ns .. 107.7 ns)
-std dev              1.351 ns   (1.063 ns .. 2.099 ns)
-variance introduced by outliers: 13% (moderately inflated)
+mean                 105.1 ns   (104.9 ns .. 105.3 ns)
+std dev              641.6 ps   (530.3 ps .. 814.7 ps)
 
 benchmarking array-of-int4/store
-time                 898.5 ns   (894.1 ns .. 903.7 ns)
-                     1.000 R²   (0.999 R² .. 1.000 R²)
-mean                 903.0 ns   (898.1 ns .. 911.5 ns)
-std dev              23.45 ns   (12.77 ns .. 39.93 ns)
-variance introduced by outliers: 34% (moderately inflated)
+time                 893.7 ns   (890.7 ns .. 896.7 ns)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 893.3 ns   (889.4 ns .. 897.8 ns)
+std dev              13.54 ns   (10.62 ns .. 17.20 ns)
+variance introduced by outliers: 15% (moderately inflated)
 
 benchmarking array-of-int4/cereal
-time                 2.130 μs   (2.107 μs .. 2.157 μs)
-                     0.999 R²   (0.999 R² .. 1.000 R²)
-mean                 2.122 μs   (2.112 μs .. 2.139 μs)
-std dev              41.90 ns   (32.47 ns .. 54.31 ns)
-variance introduced by outliers: 22% (moderately inflated)
+time                 2.102 μs   (2.090 μs .. 2.115 μs)
+                     1.000 R²   (0.999 R² .. 1.000 R²)
+mean                 2.097 μs   (2.088 μs .. 2.109 μs)
+std dev              36.71 ns   (26.99 ns .. 52.83 ns)
+variance introduced by outliers: 18% (moderately inflated)
 
 benchmarking array-of-byte-arrays/ptr-peeker
-time                 2.071 μs   (2.063 μs .. 2.080 μs)
+time                 2.050 μs   (2.044 μs .. 2.056 μs)
                      1.000 R²   (1.000 R² .. 1.000 R²)
-mean                 2.074 μs   (2.066 μs .. 2.084 μs)
-std dev              31.68 ns   (24.10 ns .. 42.63 ns)
+mean                 2.055 μs   (2.048 μs .. 2.071 μs)
+std dev              31.48 ns   (16.48 ns .. 58.61 ns)
 variance introduced by outliers: 15% (moderately inflated)
 
 benchmarking array-of-byte-arrays/store
-time                 3.242 μs   (3.215 μs .. 3.277 μs)
-                     0.999 R²   (0.996 R² .. 1.000 R²)
-mean                 3.238 μs   (3.217 μs .. 3.314 μs)
-std dev              129.0 ns   (49.67 ns .. 256.7 ns)
-variance introduced by outliers: 52% (severely inflated)
+time                 3.180 μs   (3.169 μs .. 3.196 μs)
+                     1.000 R²   (1.000 R² .. 1.000 R²)
+mean                 3.171 μs   (3.159 μs .. 3.182 μs)
+std dev              35.48 ns   (25.85 ns .. 56.55 ns)
 
 benchmarking array-of-byte-arrays/cereal
-time                 3.780 μs   (3.752 μs .. 3.818 μs)
-                     0.999 R²   (0.998 R² .. 1.000 R²)
-mean                 3.795 μs   (3.766 μs .. 3.843 μs)
-std dev              124.9 ns   (84.13 ns .. 171.3 ns)
-variance introduced by outliers: 43% (moderately inflated)
+time                 3.791 μs   (3.750 μs .. 3.866 μs)
+                     0.997 R²   (0.990 R² .. 1.000 R²)
+mean                 3.785 μs   (3.753 μs .. 3.903 μs)
+std dev              188.2 ns   (36.25 ns .. 392.9 ns)
+variance introduced by outliers: 63% (severely inflated)
 ```

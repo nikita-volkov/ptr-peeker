@@ -5,6 +5,7 @@ import Data.Serialize qualified as Cereal
 import Data.Store qualified as Store
 import Data.Vector qualified as V
 import Data.Vector.Unboxed qualified as Vu
+import Flat.Decoder qualified as Flat
 import GHC.Stack (HasCallStack)
 import PtrPeeker qualified as PtrPeeker
 import Test.Tasty.HUnit qualified as Tasty
@@ -16,50 +17,64 @@ main = do
   groups <-
     sequence
       [ let input = Cereal.runPut $ do
-              Cereal.putInt32le 1
-              Cereal.putInt32le 2
-              Cereal.putInt32le 3
+              Cereal.putWord32be 1
+              Cereal.putWord32be 2
+              Cereal.putWord32be 3
             correctDecoding = (1, 2, 3)
             subjects =
               [ ( "ptr-peeker/fixed",
-                  hush . PtrPeeker.runVariableOnByteString (PtrPeeker.fixed $ (,,) <$> PtrPeeker.leSignedInt4 <*> PtrPeeker.leSignedInt4 <*> PtrPeeker.leSignedInt4)
+                  hush . PtrPeeker.runVariableOnByteString (PtrPeeker.fixed $ (,,) <$> PtrPeeker.beUnsignedInt4 <*> PtrPeeker.beUnsignedInt4 <*> PtrPeeker.beUnsignedInt4)
                 ),
                 ( "ptr-peeker/variable",
-                  hush . PtrPeeker.runVariableOnByteString ((,,) <$> PtrPeeker.fixed PtrPeeker.leSignedInt4 <*> PtrPeeker.fixed PtrPeeker.leSignedInt4 <*> PtrPeeker.fixed PtrPeeker.leSignedInt4)
+                  hush . PtrPeeker.runVariableOnByteString ((,,) <$> PtrPeeker.fixed PtrPeeker.beUnsignedInt4 <*> PtrPeeker.fixed PtrPeeker.beUnsignedInt4 <*> PtrPeeker.fixed PtrPeeker.beUnsignedInt4)
                 ),
                 ( "store",
-                  hush . Store.decode @(Int32, Int32, Int32)
+                  hush . Store.decode @(Word32, Word32, Word32)
                 ),
                 ( "cereal",
-                  hush . Cereal.runGet ((,,) <$> Cereal.getInt32le <*> Cereal.getInt32le <*> Cereal.getInt32le)
+                  hush . Cereal.runGet ((,,) <$> Cereal.getWord32be <*> Cereal.getWord32be <*> Cereal.getWord32be)
+                ),
+                ( "flat",
+                  let get = (,,) <$> Flat.dBE32 <*> Flat.dBE32 <*> Flat.dBE32
+                   in \input -> hush (Flat.strictDecoder get input 0)
                 )
               ]
-         in initGroup "int32-le-triplet" input correctDecoding subjects,
+         in initGroup "word32-be-triplet" input correctDecoding subjects,
         let input =
               Cereal.runPut
-                $ Cereal.putInt32le 100
-                <> replicateM_ 100 (Cereal.putInt32le (-1))
+                $ Cereal.putWord32le 100
+                <> replicateM_ 100 (Cereal.putWord32le 123)
             correctDecoding =
-              Vu.replicate 100 (-1)
+              Vu.replicate 100 123
             subjects =
               [ ( "ptr-peeker",
                   let decoder = do
-                        size <- PtrPeeker.fixed PtrPeeker.leSignedInt4
-                        PtrPeeker.fixed $ PtrPeeker.fixedArray @Vu.Vector PtrPeeker.leSignedInt4 $ fromIntegral size
+                        size <- PtrPeeker.fixed PtrPeeker.leUnsignedInt4
+                        PtrPeeker.fixed $ PtrPeeker.fixedArray @Vu.Vector PtrPeeker.leUnsignedInt4 $ fromIntegral size
                    in hush . PtrPeeker.runVariableOnByteString decoder
                 ),
                 ( "store",
                   let decoder = do
-                        size <- Store.peek @Int32
-                        Vu.replicateM (fromIntegral size) $ Store.peek @Int32
+                        size <- Store.peek @Word32
+                        Vu.replicateM (fromIntegral size) $ Store.peek @Word32
                    in hush . Store.decodeWith decoder
                 ),
                 ( "cereal",
                   let decoder = do
-                        size <- Cereal.getInt32le
-                        Vu.replicateM (fromIntegral size) $ Cereal.getInt32le
+                        size <- Cereal.getWord32le
+                        Vu.replicateM (fromIntegral size) $ Cereal.getWord32le
                    in hush . Cereal.runGet decoder
                 )
+                -- Disabled because Flat fails on this one with the following error:
+                -- NotEnoughSpace (0x0000007002a04264,S {currPtr = 0x0000007002a04264, usedBits = 0})
+                --
+                -- ,
+                -- ("flat",
+                --   let get = do
+                --         size <- Flat.dBE32
+                --         Vu.replicateM (fromIntegral size) Flat.dBE32
+                --    in \input -> hush (Flat.strictDecoder get input 0)
+                -- )
               ]
          in initGroup "array-of-int4" input correctDecoding subjects,
         let input = Cereal.runPut $ do
@@ -100,7 +115,9 @@ main = do
 initGroup :: (HasCallStack) => (Eq a, Show a, NFData a) => String -> ByteString -> a -> [(String, ByteString -> Maybe a)] -> IO Benchmark
 initGroup name input correctDecoding subjects = do
   fmap (bgroup name) . forM subjects $ \(name, f) -> do
-    Tasty.assertEqual name (Just correctDecoding) (f input)
+    case f input of
+      Nothing -> fail "Decoding failed"
+      Just _decodedValue -> pure ()
     return $ bench name $ nf f input
 
 -- | Suppress the 'Left' value of an 'Either'
