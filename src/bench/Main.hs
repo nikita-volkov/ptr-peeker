@@ -1,9 +1,11 @@
+module Main (main) where
+
 import Criterion.Main
 import Data.Serialize qualified as Cereal
 import Data.Store qualified as Store
 import Data.Vector qualified as V
 import Data.Vector.Unboxed qualified as Vu
-import PtrPeeker qualified as Pb
+import PtrPeeker qualified as PtrPeeker
 import Test.Tasty.HUnit qualified as Tasty
 import Prelude
 
@@ -19,10 +21,10 @@ main = do
             correctDecoding = (1, 2, 3)
             subjects =
               [ ( "ptr-peeker/fixed",
-                  hush . Pb.runVariableOnByteString (Pb.fixed $ (,,) <$> Pb.leSignedInt4 <*> Pb.leSignedInt4 <*> Pb.leSignedInt4)
+                  hush . PtrPeeker.runVariableOnByteString (PtrPeeker.fixed $ (,,) <$> PtrPeeker.leSignedInt4 <*> PtrPeeker.leSignedInt4 <*> PtrPeeker.leSignedInt4)
                 ),
                 ( "ptr-peeker/variable",
-                  hush . Pb.runVariableOnByteString ((,,) <$> Pb.fixed Pb.leSignedInt4 <*> Pb.fixed Pb.leSignedInt4 <*> Pb.fixed Pb.leSignedInt4)
+                  hush . PtrPeeker.runVariableOnByteString ((,,) <$> PtrPeeker.fixed PtrPeeker.leSignedInt4 <*> PtrPeeker.fixed PtrPeeker.leSignedInt4 <*> PtrPeeker.fixed PtrPeeker.leSignedInt4)
                 ),
                 ( "store",
                   hush . Store.decode @(Int32, Int32, Int32)
@@ -41,9 +43,9 @@ main = do
             subjects =
               [ ( "ptr-peeker",
                   let decoder = do
-                        size <- Pb.fixed Pb.leSignedInt4
-                        Pb.fixed $ Pb.fixedArray @Vu.Vector Pb.leSignedInt4 $ fromIntegral size
-                   in hush . Pb.runVariableOnByteString decoder
+                        size <- PtrPeeker.fixed PtrPeeker.leSignedInt4
+                        PtrPeeker.fixed $ PtrPeeker.fixedArray @Vu.Vector PtrPeeker.leSignedInt4 $ fromIntegral size
+                   in hush . PtrPeeker.runVariableOnByteString decoder
                 ),
                 ( "store",
                   let decoder = do
@@ -68,12 +70,12 @@ main = do
             subjects =
               [ ( "ptr-peeker",
                   let decoder = do
-                        size <- Pb.fixed Pb.leSignedInt8
-                        Pb.variableArray @V.Vector byteStringDecoder $ fromIntegral size
+                        size <- PtrPeeker.fixed PtrPeeker.leSignedInt8
+                        PtrPeeker.variableArray @V.Vector byteStringDecoder $ fromIntegral size
                       byteStringDecoder = do
-                        size <- Pb.fixed Pb.leSignedInt8
-                        Pb.fixed $ Pb.byteArrayAsByteString $ fromIntegral size
-                   in hush . Pb.runVariableOnByteString decoder
+                        size <- PtrPeeker.fixed PtrPeeker.leSignedInt8
+                        PtrPeeker.fixed $ PtrPeeker.byteArrayAsByteString $ fromIntegral size
+                   in hush . PtrPeeker.runVariableOnByteString decoder
                 ),
                 ( "store",
                   hush . Store.decode
